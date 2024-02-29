@@ -20,9 +20,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
 
     if ($result && $result->num_rows == 1) {
         $user = $result->fetch_assoc();
-        if ($password === $user['password']) { // Vérification du mot de passe
+        if ($password === $user['password']) { 
             session_start();
             $_SESSION['username'] = $user['username'];
+            $_SESSION['role'] = $user['role'];
 
             if ($user['role'] == 'admin') {
                 header('Location: admin.php');
@@ -34,12 +35,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
         } else {
             $error = 'Mauvais identifiants';
         }
-    } else {
-        $error = 'Mauvais identifiants';
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -117,19 +115,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($
     <form action="login.php" method="post">
         <div>
             <label for="username">Nom d'utilisateur:</label>
-            <input type="text" id="username" name="username">
+            <input type="text" id="username" name="username" autocomplete="username">
         </div>
 
         <div>
             <label for="password">Mot de passe:</label>
-            <input type="password" id="password" name="password">
+            <input type="password" id="password" name="password" autocomplete="current-password">
         </div>
 
         <div>
             <input type="submit" value="Se connecter">
         </div>
-    </form>
-</div>
+    </form></div>
 
 </body>
 </html>
