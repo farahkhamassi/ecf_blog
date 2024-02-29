@@ -1,30 +1,41 @@
 <?php
-include("config.php");
+$title = "Login"; 
+require 'config.php';
 
-$message = '';
+$error = null;
+$success = null;
 
-if (isset($_POST['username']) && isset($_POST['password'])) {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['username']) && isset($_POST['password'])) {
 
-    $sql = "SELECT * FROM user WHERE username = :username";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['username' => $username]);
-    $user = $stmt->fetch();
+    $mysqli = new mysqli("localhost", "root", "", "ecf_blog", 3306);
+    if ($mysqli->connect_error) {
+        die("Échec de la connexion : " . $mysqli->connect_error);
+    }
 
-    if ($user && password_verify($password, $user['password'])) {
-        session_start();
-        $_SESSION['user_id'] = $user['id'];
+    $username = $mysqli->real_escape_string($_POST['username']); 
+    $password = $mysqli->real_escape_string($_POST['password']); 
 
-        if ($user['role'] == 'admin') {
-            header('Location: admin.php');
-            exit;
-        } elseif ($user['role'] == 'user') {
-            header('Location: index.php');
-            exit;
+    $query = "SELECT * FROM user WHERE username='$username'";
+    $result = $mysqli->query($query);
+
+    if ($result && $result->num_rows == 1) {
+        $user = $result->fetch_assoc();
+        if ($password === $user['password']) { // Vérification du mot de passe
+            session_start();
+            $_SESSION['username'] = $user['username'];
+
+            if ($user['role'] == 'admin') {
+                header('Location: admin.php');
+                exit;
+            } elseif ($user['role'] == 'user') {
+                header('Location: index.php');
+                exit;
+            }
+        } else {
+            $error = 'Mauvais identifiants';
         }
     } else {
-        $message = 'Mauvais identifiants';
+        $error = 'Mauvais identifiants';
     }
 }
 ?>
@@ -36,7 +47,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
     <style>
-body {
+        body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             margin: 0;
@@ -99,8 +110,8 @@ body {
 <div class="login-container">
     <h2>Connexion</h2>
 
-    <?php if (!empty($message)): ?>
-        <p><?= $message ?></p>
+    <?php if (!empty($error)): ?>
+        <p><?= $error ?></p>
     <?php endif; ?>
 
     <form action="login.php" method="post">
