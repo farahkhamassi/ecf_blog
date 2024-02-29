@@ -1,0 +1,74 @@
+<?php
+$title = "Modifier / Supprimer Postes"; 
+require 'config.php';
+
+$error = null;
+$success = null;
+
+session_start();
+
+if (!isset($_SESSION['username']) || $_SESSION['role'] !== 'admin') {
+    header("Location: login.php"); 
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_post'])) {
+    $postId = $_POST['delete_post'];
+
+    $stmt = $pdo->prepare("DELETE FROM posts WHERE id = ?");
+    $stmt->execute([$postId]);
+    $success = "Le poste a été supprimé avec succès.";
+}
+
+$stmt = $pdo->query("SELECT * FROM posts");
+$posts = $stmt->fetchAll();
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifier / Supprimer Postes</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container mt-5">
+    <h1>Liste des Postes</h1>
+    <?php if ($error): ?>
+        <div class="alert alert-danger" role="alert">
+            <?= $error ?>
+        </div>
+    <?php endif; ?>
+    <?php if ($success): ?>
+        <div class="alert alert-success" role="alert">
+            <?= $success ?>
+        </div>
+    <?php endif; ?>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Titre</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($posts as $post): ?>
+                <tr>
+                    <td><?= $post['id'] ?></td>
+                    <td><?= $post['title'] ?></td>
+                    <td>
+                        <a href="modif_post.php?id=<?= $post['id'] ?>" class="btn btn-primary">Modifier</a>
+                        <form action="edit_post.php" method="post" style="display: inline;">
+                            <input type="hidden" name="delete_post" value="<?= $post['id'] ?>">
+                            <button type="submit" class="btn btn-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce poste ?')">Supprimer</button>
+                        </form>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+    <a href="add_post.php" class="btn btn-success">Ajouter un Poste</a>
+</div>
+</body>
+</html>
