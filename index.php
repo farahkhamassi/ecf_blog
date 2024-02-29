@@ -1,6 +1,14 @@
 <?php
 require_once "./vendor/autoload.php";
 
+session_start(); 
+
+if (isset($_SESSION['username'])) {
+    $logoutUrl = 'logout.php'; 
+} else {
+    $logoutUrl = ''; 
+}
+
 try {
     $pdo = new PDO('mysql:host=localhost;dbname=ecf_blog;port=3306','root',null, [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -39,7 +47,7 @@ $totalPages = ceil($totalPosts / $perPage);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="app.js" defer></script>
     <title>ECF 3 - Blog</title>
 </head>
@@ -56,7 +64,11 @@ $totalPages = ceil($totalPosts / $perPage);
                         </li>
                     </ul>
 
-                    <a href="login.php" class="btn btn-primary">Connexion</a>
+                    <?php if ($logoutUrl): ?>
+                        <a href="<?= $logoutUrl ?>" class="btn btn-danger">Déconnexion</a>
+                    <?php else: ?>
+                        <a href="login.php" class="btn btn-primary">Connexion</a>
+                    <?php endif; ?>
                 </div>
             </div>
         </nav>
